@@ -1,0 +1,24 @@
+[project]
+name = "farm_stack"
+version = "0.1.0"
+description = "FARM Stack app to build on a gen-ai"
+authors = [
+    {name = "M-Hamza380",email = "hamza.anjum380@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10, <3.12"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python-dotenv = "^1.1.1"
+fastapi = {extras = ["all"], version = "^0.116.1"}
+uvicorn = "^0.35.0"
+clerk-backend-api = "^3.0.5"
+pymongo = {extras = ["srv"], version = "^4.13.2"}
+python-multipart = "^0.0.20"
+requests = "^2.32.4"
+aiostream = "^0.7.0"
