@@ -9,12 +9,23 @@ logging.basicConfig(
 
 
 list_of_files = [
-    f"src/backend/__ini__.py",
-    f"src/backend/main.py",
-    f"src/backend/routers/__ini__.py",
-    f"src/backend/routers/route.py",
-    f"src/backend/database/__ini__.py",
-    f"src/backend/database/model.py",
+    f"src/backend/src/__ini__.py",
+    f"src/backend/src/main.py",
+    f"src/backend/src/ai_genrator.py",
+    f"src/backend/src/contants/__init__.py",
+    f"src/backend/src/utilities/__init__.py",
+    f"src/backend/src/utilities/utils.py",
+    f"src/backend/src/utilities/logger.py",
+    f"src/backend/src/database/__ini__.py",
+    f"src/backend/src/database/models.py",
+    f"src/backend/src/database/db.py",
+    f"src/backend/src/routers/__ini__.py",
+    f"src/backend/src/routers/router.py",
+    f"src/backend/src/routers/challenge.py",
+    f"src/backend/src/routers/webhooks.py",
+    f"src/backend/server.py",
+    f"src/backend/.env",
+    f"src/backend/.env-example",
 ]
 
 
