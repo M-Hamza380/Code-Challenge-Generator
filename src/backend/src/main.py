@@ -1,11 +1,41 @@
 import os
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from clerk_backend_api import Clerk
+from contextlib import asynccontextmanager
+from bson import ObjectId
+from pymongo import AsyncMongoClient
+from datetime import datetime
 
-clerk_sdk = Clerk(bearer_auth=os.getenv("CLERK_KEY"))
+from contants import COLLECTION_NAME
+from database.db import ChallengeDB
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        uri = ""
+        client = AsyncMongoClient(uri)
+        db = client.get_database("")
+
+        pong = await db.command('ping')
+        if int(pong['ok']) != 1:
+            raise Exception('Cluster connection is not ok!')
+        
+        coding = db.get_collection(COLLECTION_NAME)
+        app.state.coding_db = ChallengeDB(coding)
+
+        yield
+
+        await client.close()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+app = FastAPI(
+    title="Coding Challenge Generator",
+    version="0.1.0",
+    description="Coding Challenge Generator APP",
+    lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,

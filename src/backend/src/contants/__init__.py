@@ -6,6 +6,10 @@ from fastapi import HTTPException
 
 load_dotenv()
 
+COLLECTION_NAME = ""
+MONGODB_URI = os.environ.get("MONGODB_URI")
+DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
+
 clerk_sdk = Clerk(bearer_auth=os.getenv('CLERK_SECRET_KEY'))
 
 def authenticate_and_get_user_details(request):
