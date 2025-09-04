@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+from typing import Dict, Any
 
 
 class Challenge(BaseModel):
@@ -14,16 +15,16 @@ class Challenge(BaseModel):
     explanation: str = Field(default_factory=str, description='coding challenge explanation')
 
     @staticmethod
-    def from_doc(doc) -> "Challenge":
+    def from_doc(doc: Dict[str, Any]) -> "Challenge":
         return Challenge(
             _id = str(doc['_id']),
             difficulty = doc['difficulty'],
-            date_created = doc.get('date_created'),
-            created_by = doc.get('created_by'),
-            title = doc.get('title'),
-            options = doc.get('options'),
-            correct_answer_id = doc.get('correct_answer_id'),
-            explanation = doc.get('explanation')
+            date_created = doc['date_created'],
+            created_by = doc['created_by'],
+            title = doc['title'],
+            options = doc['options'],
+            correct_answer_id = doc['correct_answer_id'],
+            explanation = doc['explanation']
         )
 
 
@@ -33,10 +34,10 @@ class ChallengeQuota(BaseModel):
     last_reset_date: datetime = Field(default_factory=datetime.now, description='user reset his/her quota')
 
     @staticmethod
-    def from_doc(doc) -> "ChallengeQuota":
+    def from_doc(doc: Dict[str, Any]) -> "ChallengeQuota":
         return ChallengeQuota(
             _id = str(doc['_id']),
-            quota_remaining = doc.get('quota_remaining'),
-            last_reset_date = doc.get('last_reset_date')
+            quota_remaining = doc['quota_remaining'],
+            last_reset_date = doc['last_reset_date']
         )
 

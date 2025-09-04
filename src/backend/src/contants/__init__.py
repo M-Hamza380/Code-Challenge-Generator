@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from clerk_backend_api import Clerk, AuthenticateRequestOptions
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
+from typing import Dict, Any
 
 
 load_dotenv()
@@ -12,7 +13,7 @@ DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"
 
 clerk_sdk = Clerk(bearer_auth=os.getenv('CLERK_SECRET_KEY'))
 
-def authenticate_and_get_user_details(request):
+def authenticate_and_get_user_details(request: Request) -> Dict[str, Any | None]:
     try:
         request_state = clerk_sdk.authenticate_request(
             request,
