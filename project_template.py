@@ -11,7 +11,6 @@ logging.basicConfig(
 list_of_files = [
     f"src/backend/src/__ini__.py",
     f"src/backend/src/main.py",
-    f"src/backend/src/ai_genrator.py",
     f"src/backend/src/contants/__init__.py",
     f"src/backend/src/utilities/__init__.py",
     f"src/backend/src/utilities/utils.py",
@@ -19,6 +18,9 @@ list_of_files = [
     f"src/backend/src/database/__ini__.py",
     f"src/backend/src/database/models.py",
     f"src/backend/src/database/db.py",
+    f"src/backend/src/ai/__init__.py",
+    f"src/backend/src/ai/ai_generator.py",
+    f"src/backend/src/ai/prompts.py",
     f"src/backend/src/routers/__ini__.py",
     f"src/backend/src/routers/router.py",
     f"src/backend/src/routers/challenge.py",

@@ -17,6 +17,7 @@ dependencies = [
     "aiostream>=0.7.0",
     "sqlalchemy>=2.0.41",
     "svix>=1.65.0",
+    "openai>=1.106.1",
 ]
 
 [build-system]
