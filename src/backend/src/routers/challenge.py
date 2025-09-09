@@ -2,7 +2,6 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    status,
     Request
 )
 from pydantic import BaseModel, Field
@@ -19,7 +18,7 @@ from ..database.db import (
     create_challenge
 )
 from ..database.models import get_db
-
+from ..ai.ai_generator import generate_challenge_with_ai
 
 router = APIRouter()
 
@@ -65,13 +64,32 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         if quota_remaining <= 0:
             raise HTTPException(status_code=429, detail="Quota has been exhausted for today")
         
-        challenge_data = None
+        challenge_data = generate_challenge_with_ai(challenge_request.difficulty)
+        
+        new_challenge = create_challenge(
+            db,
+            challenge_request.difficulty,
+            datetime.now(),
+            **challenge_data
+        )
+        
+        if new_challenge.options is not None:
+            options = json.loads(new_challenge.options.values)
+        else:
+            options = []
         
         quota_remaining -= 1
         db.commit()
         db.refresh(quota_remaining)
         
-        return challenge_data
+        return {
+            "id": new_challenge.id,
+            "difficulty": new_challenge.difficulty,
+            "title": new_challenge.title,
+            "options": options,
+            "correct_answer_id": new_challenge.correct_answer_id,
+            "explanation": new_challenge.explanation
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

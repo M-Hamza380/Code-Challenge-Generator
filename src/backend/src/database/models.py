@@ -24,7 +24,7 @@ class ChallengeQuota(Base):
     __tablename__ = "challenge_quotas"
     
     id = Column((Integer), primary_key=True, autoincrement=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("challenges.id"), nullable=False)
     quota_remaining = Column(Integer, nullable=False, default=50)
     last_reset_date = Column(DateTime, nullable=False, default=datetime.now)
     
