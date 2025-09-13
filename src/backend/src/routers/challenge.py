@@ -1,11 +1,9 @@
 from fastapi import (
     APIRouter,
-    Depends,
     HTTPException,
     Request
 )
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 import json
 from datetime import datetime
 
@@ -17,20 +15,24 @@ from ..database.db import (
     reset_challenge_quota,
     create_challenge
 )
-from ..database.models import get_db
 from ..ai.ai_generator import generate_challenge_with_ai
+from ..utilities.logger import logger
 
 router = APIRouter()
 
 def get_user_details(request: Request):
     try:
         user_details = authenticate_and_get_user_details(request)
-        if user_details['user_id'] is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
         
-        user_id = user_details['user_id']
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        logger.debug(f"Authentication response: {user_details}")
+        
+        user_id = user_details.get("user_id")
+        if not user_details or user_id is None:
+            logger.error("Authentication failed: No user_id in response")
+            raise HTTPException(
+                status_code=401, 
+                detail="Authentication failed: No user_id in response"
+            )
         return user_details, user_id
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -48,10 +50,13 @@ class ChallengeRequest(BaseModel):
     
 
 @router.post("/generate-challenge")
-async def generate_challenge(request: Request, challenge_request: ChallengeRequest, db: Session = Depends(get_db)):
+async def generate_challenge(request: Request, challenge_request: ChallengeRequest):
     try:
         user_details, user_id = get_user_details(request)
+        db = request.app.state.db
         quota = get_challenge_quota(db, user_id)
+        # Add logging
+        logger.debug(f"Generating challenge for user: {user_id}")
         
         if not quota:
             quota = create_challenge_quota(db, user_id)
@@ -91,25 +96,32 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
             "explanation": new_challenge.explanation
         }
     except Exception as e:
+        logger.error(f"Error in generate_challenge: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/my-challenge")
-async def my_history(request: Request, db: Session = Depends(get_db)):
+async def my_history(request: Request):
     try:
         user_details, user_id = get_user_details(request)
+        db = request.app.state.db
         challenges = get_user_challenges(db, user_id)
         return {"challenges": challenges}
     except Exception as e:
+        logger.error(f"Error in my_history: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/quota")
-async def get_quota(request: Request, db: Session = Depends(get_db)):
+async def get_quota(request: Request):
     try:
         user_details, user_id = get_user_details(request)
+        db = request.app.state.db
         challenge_quota = get_challenge_quota(db, user_id)
+        logger.debug(f"Checking quota for user: {user_id}")
         if not challenge_quota:
+            logger.info(f"No challenge quota found for user : {user_id}")
+            challenge_quota = create_challenge_quota(db, user_id)
             return {
                 "user_id": user_id,
                 "quota_remaining": 0,
@@ -118,6 +130,7 @@ async def get_quota(request: Request, db: Session = Depends(get_db)):
         quota_reset = reset_challenge_quota(db, challenge_quota)
         return quota_reset
     except Exception as e:
+        logger.error(f"Error in get_quota: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

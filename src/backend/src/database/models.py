@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 from ..contants import SQLALCHEMY_DATABASE_URI
@@ -28,16 +27,4 @@ class ChallengeQuota(Base):
     quota_remaining = Column(Integer, nullable=False, default=50)
     last_reset_date = Column(DateTime, nullable=False, default=datetime.now)
     
-
-Base.metadata.create_all(engine)
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
