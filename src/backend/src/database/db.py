@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .models import Challenge, ChallengeQuota
 
@@ -8,8 +8,14 @@ def get_challenge_quota(db: Session, user_id: int) -> ChallengeQuota:
     try:
         challenge_quota = db.query(ChallengeQuota).filter(ChallengeQuota.user_id == user_id).first()
         if challenge_quota is None:
-            challenge_quota = ChallengeQuota(user_id=user_id)
+            challenge_quota = ChallengeQuota(
+                user_id=user_id,
+                quota_remaining=50,
+                last_reset_date=datetime.now()
+            )
             db.add(challenge_quota)
+            db.commit()
+            db.refresh(challenge_quota)
         return challenge_quota
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -25,19 +31,21 @@ def create_challenge_quota(db: Session, user_id: int) -> ChallengeQuota:
         raise HTTPException(status_code=500, detail=str(e))
 
 def reset_challenge_quota(db: Session, quota: ChallengeQuota) -> ChallengeQuota | None:
-    try:
+    try:        
         quota_reset_date = datetime.now()
-        quota_sub = (quota_reset_date - quota.last_reset_date).total_seconds() / 60
-        if quota_sub > 30:
-            db.query(ChallengeQuota).filter(ChallengeQuota.id == quota.id).update(
+        time_diff = quota_reset_date - quota.last_reset_date
+        should_reset = time_diff > timedelta(hours=2)
+        if should_reset:
+            result = db.query(ChallengeQuota).filter(ChallengeQuota.user_id == quota.user_id).update(
                 {
                     "quota_remaining": 50, 
                     "last_reset_date": quota_reset_date
                 }
             )
             db.commit()
-            db.refresh(quota)
-            return quota
+            if result > 0:
+                db.refresh(quota)
+        return quota
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -54,46 +54,48 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
     try:
         user_details, user_id = get_user_details(request)
         db = request.app.state.db
-        quota = get_challenge_quota(db, user_id)
-        # Add logging
-        logger.debug(f"Generating challenge for user: {user_id}")
         
+        # Get or create quota
+        quota = get_challenge_quota(db, user_id)
         if not quota:
             quota = create_challenge_quota(db, user_id)
         
+        # Reset quota if needed
         quota = reset_challenge_quota(db, quota)
-        if quota is None:
-            raise HTTPException(status_code=500, detail="Failed to reset challenge quota")
         
-        quota_remaining = quota.quota_remaining.first()
-        if quota_remaining <= 0:
-            raise HTTPException(status_code=429, detail="Quota has been exhausted for today")
-        
+        if quota.quota_remaining <= 0:
+            raise HTTPException(
+                status_code=429, 
+                detail="Quota has been exhausted for today"
+            )
+            
+        # Generate challenge
         challenge_data = generate_challenge_with_ai(challenge_request.difficulty)
         
+        # Create challenge with correct date
         new_challenge = create_challenge(
-            db,
-            challenge_request.difficulty,
-            datetime.now(),
-            **challenge_data
+            db=db,
+            difficulty=challenge_request.difficulty,
+            date_created=datetime.now(),
+            title=challenge_data["title"],
+            options=json.dumps(challenge_data["options"]),
+            correct_answer_id=challenge_data["correct_answer_id"],
+            explanation=challenge_data["explanation"]
         )
         
-        if new_challenge.options is not None:
-            options = json.loads(new_challenge.options.values)
-        else:
-            options = []
-        
-        quota_remaining -= 1
+        # Update quota
+        quota.quota_remaining -= 1
         db.commit()
-        db.refresh(quota_remaining)
+        db.refresh(quota)
         
         return {
             "id": new_challenge.id,
             "difficulty": new_challenge.difficulty,
             "title": new_challenge.title,
-            "options": options,
+            "options": json.loads(new_challenge.options),
             "correct_answer_id": new_challenge.correct_answer_id,
-            "explanation": new_challenge.explanation
+            "explanation": new_challenge.explanation,
+            "timestamp": new_challenge.date_created.isoformat()
         }
     except Exception as e:
         logger.error(f"Error in generate_challenge: {str(e)}", exc_info=True)
