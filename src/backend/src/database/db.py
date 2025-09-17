@@ -53,7 +53,7 @@ def reset_challenge_quota(db: Session, quota: ChallengeQuota) -> ChallengeQuota 
 def create_challenge(
     db: Session,
     difficulty: str,
-    date_created: datetime,
+    created_by: str,
     title: str,
     options: str,
     correct_answer_id: int,
@@ -62,7 +62,7 @@ def create_challenge(
     try:
         challenge = Challenge(
             difficulty=difficulty,
-            date_created=date_created,
+            created_by=created_by,
             title=title,
             options=options,
             correct_answer_id=correct_answer_id,
@@ -77,7 +77,10 @@ def create_challenge(
 
 def get_user_challenges(db: Session, user_id: int) -> list[Challenge]:
     try:
-        return db.query(Challenge).filter(Challenge.correct_answer_id == user_id).all()
+        challenges = db.query(Challenge).filter(Challenge.created_by == str(user_id)).order_by(
+            Challenge.date_created.desc()
+        ).all()
+        return challenges
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

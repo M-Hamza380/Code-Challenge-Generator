@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 from typing import Dict, Any
+from pydantic import BaseModel
 import json
 
 from ..contants import GEMINI_API_KEY, MODEL_ID
@@ -9,18 +10,18 @@ from ..utilities.logger import logger
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+class ChallengeInfo(BaseModel):
+    title: str
+    options: list
+    correct_answer_id: int
+    explanation: str
+
+
 def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
     try:
         # prepare the system and user prompts
         combined_prompt = (
             f"{SYSTEM_PROMPT}\n\n"
-            "Return a coding challenge in this exact JSON format:\n"
-            "{\n"
-            '    "title": "Your challenge title",\n'
-            '    "options": ["option1", "option2", "option3", "option4"],\n'
-            '    "correct_answer_id": 0,\n'
-            '    "explanation": "Your explanation"\n'
-            "}\n\n"
             f"Make it a {difficulty} difficulty challenge. Respond ONLY with the JSON."
         )
         contents = types.Content(
@@ -32,7 +33,9 @@ def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
             model=MODEL_ID,
             contents=[contents],
             config=types.GenerateContentConfig(
-                temperature=0.7
+                temperature=0.7,
+                response_mime_type="application/json",
+                response_schema=ChallengeInfo
             )
         )
         

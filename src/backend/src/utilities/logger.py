@@ -54,7 +54,7 @@ log_file_paths = {
 logs_format = "[ [%(asctime)s] : %(levelname)s : %(name)s : %(pathname)s : %(module)s : %(lineno)d : %(message)s ]"
 
 logger = logging.getLogger("CodeChallengeGenerator")
-logger.level
+logger.setLevel(logging.DEBUG)
 logger.propagate = False
 
 # LevelFilter to allow only specific log levels
@@ -70,7 +70,7 @@ class LevelFilter(logging.Filter):
 def create_filehandler(level, log_file_path):
     try:
         file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(level)
+        file_handler.setLevel(logging.DEBUG)
         file_handler.addFilter(LevelFilter(level))
         file_handler.setFormatter(logging.Formatter(logs_format))
         return file_handler

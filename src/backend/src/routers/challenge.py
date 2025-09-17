@@ -24,8 +24,6 @@ def get_user_details(request: Request):
     try:
         user_details = authenticate_and_get_user_details(request)
         
-        logger.debug(f"Authentication response: {user_details}")
-        
         user_id = user_details.get("user_id")
         if not user_details or user_id is None:
             logger.error("Authentication failed: No user_id in response")
@@ -76,7 +74,7 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         new_challenge = create_challenge(
             db=db,
             difficulty=challenge_request.difficulty,
-            date_created=datetime.now(),
+            created_by=user_id,
             title=challenge_data["title"],
             options=json.dumps(challenge_data["options"]),
             correct_answer_id=challenge_data["correct_answer_id"],
@@ -102,13 +100,17 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/my-challenge")
+@router.get("/my-history")
 async def my_history(request: Request):
     try:
         user_details, user_id = get_user_details(request)
         db = request.app.state.db
+        
         challenges = get_user_challenges(db, user_id)
-        return {"challenges": challenges}
+        response_data = {
+            "challenges": challenges
+        }
+        return response_data
     except Exception as e:
         logger.error(f"Error in my_history: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -120,9 +122,7 @@ async def get_quota(request: Request):
         user_details, user_id = get_user_details(request)
         db = request.app.state.db
         challenge_quota = get_challenge_quota(db, user_id)
-        logger.debug(f"Checking quota for user: {user_id}")
         if not challenge_quota:
-            logger.info(f"No challenge quota found for user : {user_id}")
             challenge_quota = create_challenge_quota(db, user_id)
             return {
                 "user_id": user_id,
