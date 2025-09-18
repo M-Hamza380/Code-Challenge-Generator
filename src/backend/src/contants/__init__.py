@@ -12,6 +12,7 @@ SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 MODEL_ID = "gemini-2.0-flash"
+CLERK_WEBHOOK_SECRET = os.getenv('CLERK_WEBHOOK_SECRET')
 clerk_sdk = Clerk(bearer_auth=os.getenv('CLERK_SECRET_KEY'))
 
 def authenticate_and_get_user_details(request: Request) -> Dict[str, Any | None]:
