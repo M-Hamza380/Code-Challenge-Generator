@@ -13,7 +13,6 @@ list_of_files = [
     f"src/backend/src/main.py",
     f"src/backend/src/contants/__init__.py",
     f"src/backend/src/utilities/__init__.py",
-    f"src/backend/src/utilities/utils.py",
     f"src/backend/src/utilities/logger.py",
     f"src/backend/src/database/__ini__.py",
     f"src/backend/src/database/models.py",
@@ -28,6 +27,8 @@ list_of_files = [
     f"src/backend/server.py",
     f"src/backend/.env",
     f"src/backend/.env-example",
+    f"src/backend/.dockerignore",
+    f"src/backend/Dockerfile",
 ]
 
 

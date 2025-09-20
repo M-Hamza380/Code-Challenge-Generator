@@ -1,0 +1,48 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Ignore virtual environments
+venv/
+.env
+.env.example
+.ccg_venv*
+
+# Ignore Git and dependency files
+.git/
+.gitignore
+*.DS_Store
+
+# Ignore IDE and OS-generated files
+.vscode/
+*.swp
+*.swo
+*.swh
+*.bak
+Thumbs.db
+
+# Ignore logs and temporary files
+logs*
+*.log
+*.tmp
+
+# Ignore environment files (security reasons)
+.apis*
+.env
+.env.local
+
+# Ignore build and package-related files
+dist/
+build/
+*.egg-info/
+
+# Ignore static and temporary generated files
+static*
+
+# Ignore specific files
+Dockerfile
+=
+

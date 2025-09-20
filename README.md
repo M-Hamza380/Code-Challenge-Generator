@@ -57,11 +57,9 @@ If you receive an error stating that script execution is disabled, you need to c
 2. Open a new PowerShell window as an administrator.
 3. Execute the following command to allow scripts to run:
 
-```
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
-4. Press Y to confirm the change.
+Press Y to confirm the change.
 ```
 
 4. Install the required libraries: (pyproject.toml)
@@ -73,5 +71,5 @@ uv sync --active --link-mode=copy
 6. Open your terminal in VS Code and run the command:
 
 ```
-python app.py
+python server.py
 ```
