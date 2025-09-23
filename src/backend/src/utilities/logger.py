@@ -1,4 +1,5 @@
 import os, sys, logging
+import logging.config
 from pathlib import Path
 from datetime import datetime
 from colorama import Fore, Style, init
@@ -34,14 +35,11 @@ def timestamp_dirs(base_time):
         create_dirs(timestamp_dir)
         return timestamp_dir
     except Exception as e:
-        raise Exception("Ërror in timestamp_dirs function: {e}")
+        raise Exception(f"Ërror in timestamp_dirs function: {e}")
 
 # Current timestamp and create directory
 base_time = datetime.now()
 timestamp_dir = timestamp_dirs(base_time)
-
-if timestamp_dir is None:
-    raise Exception("Failed to create the timestamp directory for logging")
 
 log_file_paths = {
     logging.INFO: os.path.join(timestamp_dir, 'info.log'),
@@ -59,7 +57,6 @@ logger.propagate = False
 
 # LevelFilter to allow only specific log levels
 class LevelFilter(logging.Filter):
-
     def __init__(self, level):
         self._level = level
     
@@ -140,3 +137,4 @@ class ColorFormatter(logging.Formatter):
 # Setup console handler with color formatter
 console_handler.setFormatter(ColorFormatter(logs_format))
 add_handler_once(logger, console_handler)
+

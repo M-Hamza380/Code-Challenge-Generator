@@ -44,11 +44,9 @@ app.add_middleware(
 app.include_router(router)
 
 
-
 @app.get("/")
 def index():
-    return {'Hello': 'world'}
-
+    return {'message': 'Hello World!'}
 
 
 if __name__ == "__main__":

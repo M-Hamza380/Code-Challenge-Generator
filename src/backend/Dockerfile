@@ -8,7 +8,8 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 
 # Set environment variables
-ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1 \ 
+    UV_LINK_MODE=copy
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -49,4 +50,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 1243
 
 # Run the application
-CMD ["uvicorn", "server", "--host", "localhost", "--port", "1243", "--workers", "2"]
+CMD ["uvicorn", "server:app", "--host", "localhost", "--port", "1243", "--workers", "2"]
