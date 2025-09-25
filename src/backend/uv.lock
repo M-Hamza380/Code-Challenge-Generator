@@ -323,6 +323,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiostream" },
     { name = "clerk-backend-api" },
+    { name = "colorama" },
     { name = "fastapi", extra = ["all"] },
     { name = "google-genai" },
     { name = "python-dotenv" },
@@ -337,6 +338,7 @@ dependencies = [
 requires-dist = [
     { name = "aiostream", specifier = ">=0.7.0" },
     { name = "clerk-backend-api", specifier = ">=3.0.5" },
+    { name = "colorama", specifier = ">=0.4.6" },
     { name = "fastapi", extras = ["all"], specifier = ">=0.116.1" },
     { name = "google-genai", specifier = ">=1.37.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
