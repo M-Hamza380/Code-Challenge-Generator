@@ -10,6 +10,7 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
+JWT_KEY = os.getenv('JWT_KEY')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 MODEL_ID = "gemini-2.0-flash"
 CLERK_WEBHOOK_SECRET = os.getenv('CLERK_WEBHOOK_SECRET')
@@ -20,8 +21,8 @@ def authenticate_and_get_user_details(request: Request) -> Dict[str, Any | None]
         request_state = clerk_sdk.authenticate_request(
             request,
             AuthenticateRequestOptions(
-                jwt_key=os.getenv('JWT_KEY'),
-                authorized_parties=["http://localhost:5173", "http://localhost:5174"]
+                jwt_key=JWT_KEY,
+                authorized_parties=["http://localhost:5173", "http://localhost:5174", "http://localhost:4173"]
             )
         )
 

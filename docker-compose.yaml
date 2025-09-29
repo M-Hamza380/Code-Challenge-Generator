@@ -1,0 +1,40 @@
+name: code-challenge-generator
+
+services:
+  backend:
+    image: ccg:v2
+    container_name: backend
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    ports:
+      - "1243:1243"
+    env_file:
+      - src/backend/.env
+    volumes:
+      - ./src/backend:/app/src
+    networks:
+      - app-network
+  
+  frontend:
+    image: react_ccg:v2
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:1243
+    ports:
+      - "4173:4173"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  backend-data:
+
+networks:
+  app-network:
+    driver: bridge
+
