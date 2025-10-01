@@ -26,14 +26,18 @@ def get_user_details(request: Request):
         
         user_id = user_details.get("user_id")
         if not user_details or user_id is None:
-            logger.error("Authentication failed: No user_id in response")
+            logger.error("Authentication failed: Invalid or missing token")
             raise HTTPException(
                 status_code=401, 
-                detail="Authentication failed: No user_id in response"
+                detail="Authentication failed: Please log in again"
             )
         return user_details, user_id
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Authentication error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=401, 
+            detail="Authentication failed: Invalid token"
+        )
 
 
 class ChallengeRequest(BaseModel):
@@ -61,10 +65,16 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         # Reset quota if needed
         quota = reset_challenge_quota(db, quota)
         
-        if quota.quota_remaining <= 0:
+        if quota:
+            if quota.quota_remaining <= 0:
+                raise HTTPException(
+                    status_code=429, 
+                    detail="Quota has been exhausted for today"
+                )
+        else:
             raise HTTPException(
-                status_code=429, 
-                detail="Quota has been exhausted for today"
+                status_code=500, 
+                detail="Quota not found"
             )
             
         # Generate challenge
@@ -120,6 +130,11 @@ async def my_history(request: Request):
 async def get_quota(request: Request):
     try:
         user_details, user_id = get_user_details(request)
+        
+        if not hasattr(request.app.state, 'db'):
+            logger.error("Database connection not initialized")
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
         db = request.app.state.db
         challenge_quota = get_challenge_quota(db, user_id)
         if not challenge_quota:
@@ -130,7 +145,11 @@ async def get_quota(request: Request):
                 "last_reset_date": datetime.now()
             }
         quota_reset = reset_challenge_quota(db, challenge_quota)
-        return quota_reset
+        return {
+            "user_id": user_id,
+            "quota_remaining": quota_reset.quota_remaining,
+            "last_reset_date": quota_reset.last_reset_date.isoformat()
+        }
     except Exception as e:
         logger.error(f"Error in get_quota: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
