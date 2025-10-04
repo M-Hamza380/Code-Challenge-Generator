@@ -8,7 +8,8 @@ from typing import Dict, Any
 load_dotenv()
 
 
-SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
+MONGODB_URI = os.environ.get("MONGODB_URI")
+DB_NAME = os.getenv("DB_NAME")
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
 JWT_KEY = os.getenv('JWT_KEY')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')

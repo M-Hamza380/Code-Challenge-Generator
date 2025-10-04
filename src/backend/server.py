@@ -2,20 +2,29 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from sqlalchemy.orm import sessionmaker
+from pymongo import AsyncMongoClient, ASCENDING, DESCENDING
 
 from src.routers.router import router
-from src.database.models import Base, engine
-from src.contants import DEBUG
+from src.contants import DEBUG, MONGODB_URI, DB_NAME
 from src.utilities.logger import logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        Base.metadata.create_all(engine)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        logger.warning("FastAPI server is starting up!")
+        client = AsyncMongoClient(MONGODB_URI, tz_aware=True)
         
-        app.state.db = SessionLocal()
+        result = await client.admin.command("ping")
+        if result.get("ok") != 1:
+            raise HTTPException(status_code=500, detail="Could not connect to MongoDB")
+        
+        db = client.get_database(DB_NAME)
+        
+        await db.challenge_quotas.create_index("user_id", unique=True)
+        await db.challenges.create_index([("created_by", ASCENDING), ("date_created", DESCENDING)], unique=False)
+        
+        app.state.mongo_client = client
+        app.state.db = db
         yield 
         
         if hasattr(app.state.db, 'db'):

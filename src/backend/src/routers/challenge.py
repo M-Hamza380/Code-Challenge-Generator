@@ -66,7 +66,7 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         quota = reset_challenge_quota(db, quota)
         
         if quota:
-            if quota.quota_remaining <= 0:
+            if quota.get("quota_remaining", 0) <= 0:
                 raise HTTPException(
                     status_code=429, 
                     detail="Quota has been exhausted for today"
@@ -92,7 +92,7 @@ async def generate_challenge(request: Request, challenge_request: ChallengeReque
         )
         
         # Update quota
-        quota.quota_remaining -= 1
+        quota.get("quota_remaining") -= 1
         db.commit()
         db.refresh(quota)
         

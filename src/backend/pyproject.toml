@@ -15,10 +15,10 @@ dependencies = [
     "python-multipart>=0.0.20",
     "requests>=2.32.4",
     "aiostream>=0.7.0",
-    "sqlalchemy>=2.0.41",
-    "svix>=1.65.0",
     "google-genai>=1.37.0",
     "colorama>=0.4.6",
+    "pymongo>=4.15.2",
+    "dnspython>=2.7.0",
 ]
 
 [build-system]

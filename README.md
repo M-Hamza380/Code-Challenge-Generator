@@ -40,7 +40,19 @@ or
 uv venv 'your virtual env folder name'
 ```
 
-3. Activate your virtual environment: (using VS Code CMD terminal)
+3. Setting Environment Variable in PowerShell:
+
+```
+$env:UV_LINK_MODE = "copy"
+```
+
+Setting Environment Variable in Unix/Linux:
+
+```
+export UV_LINK_MODE=copy
+```
+
+4. Activate your virtual environment: (using VS Code CMD terminal)
 
 ```
 your virtual env folder name\Scripts\activate
@@ -65,7 +77,7 @@ Press Y to confirm the change.
 4. Install the required libraries: (pyproject.toml)
 
 ```
-uv sync --active --link-mode=copy
+uv sync --active
 ```
 
 6. Open your terminal in VS Code and run the command:

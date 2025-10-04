@@ -1,31 +1,22 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import List
 
-from ..contants import SQLALCHEMY_DATABASE_URI
-
-engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=True)
-Base = declarative_base()
-
-class Challenge(Base):
-    __tablename__ = "challenges"
-    
-    id = Column((Integer), primary_key=True, autoincrement=True, nullable=False)
-    difficulty = Column(String, nullable=False)
-    date_created = Column(DateTime, nullable=False, default=datetime.now)
-    created_by = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    options = Column(String, nullable=False)
-    correct_answer_id = Column(Integer, nullable=False)
-    explanation = Column(String, nullable=False)
+class Challenge(BaseModel):    
+    id: str = Field(..., description="MongoDB _id as primary key")
+    difficulty: str 
+    date_created: datetime 
+    created_by: str 
+    title: str 
+    options: List[str] 
+    correct_answer_id: int 
+    explanation: str 
     
 
-class ChallengeQuota(Base):
-    __tablename__ = "challenge_quotas"
-    
-    id = Column((Integer), primary_key=True, autoincrement=True, nullable=False)
-    user_id = Column(String, nullable=False, unique=True)
-    quota_remaining = Column(Integer, nullable=False, default=50)
-    last_reset_date = Column(DateTime, nullable=False, default=datetime.now)
+class ChallengeQuota(BaseModel):
+    id: str
+    user_id: str 
+    quota_remaining: int 
+    last_reset_date: datetime
     
 

@@ -1,87 +1,111 @@
-from sqlalchemy.orm import Session
+from bson import ObjectId
+from pymongo import ReturnDocument
+from pymongo.database import Database
+from pymongo.errors import PyMongoError
+from uuid import uuid4
 from fastapi import HTTPException
 from datetime import datetime, timedelta
+from typing import Dict
 
 from .models import Challenge, ChallengeQuota
 
-def get_challenge_quota(db: Session, user_id: int) -> ChallengeQuota:
+DEFAULT_QUOTA = 50
+
+def _serialize_id(doc: Dict | None) -> Dict | None:
+    if not doc:
+        return None
+
+    doc['id'] = str(doc['_id'])
+    del doc['id']
+    return doc
+
+def get_challenge_quota(db: Database, user_id: str) -> Dict | None:
     try:
-        challenge_quota = db.query(ChallengeQuota).filter(ChallengeQuota.user_id == user_id).first()
+        col = db.get_collection("challenge_quotas")
+        challenge_quota = col.find_one({"user_id": user_id})
+        
         if challenge_quota is None:
-            challenge_quota = ChallengeQuota(
-                user_id=user_id,
-                quota_remaining=50,
-                last_reset_date=datetime.now()
-            )
-            db.add(challenge_quota)
-            db.commit()
-            db.refresh(challenge_quota)
-        return challenge_quota
-    except Exception as e:
+            challenge_quota = {
+                "user_id": user_id,
+                "quota_remaining": DEFAULT_QUOTA,
+                "last_reset_date": datetime.now()
+            }
+            col.insert_one(challenge_quota)
+            challenge_quota = col.find_one({"user_id": user_id})
+        
+        return _serialize_id(challenge_quota)
+    except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def create_challenge_quota(db: Session, user_id: int) -> ChallengeQuota:
+def create_challenge_quota(db: Database, user_id: str) -> Dict | None:
     try:
-        challenge_quota = ChallengeQuota(user_id=user_id)
-        db.add(challenge_quota)
-        db.commit()
-        db.refresh(challenge_quota)
-        return challenge_quota
-    except Exception as e:
+        col = db.get_collection("challenge_quotas")
+        challenge_quota = {
+            "user_id": user_id,
+            "quota_remaining": DEFAULT_QUOTA,
+            "last_reset_date": datetime.now()
+        }
+        col.insert_one(challenge_quota)
+        return _serialize_id(col.find_one({"user_id": user_id}))
+    except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def reset_challenge_quota(db: Session, quota: ChallengeQuota) -> ChallengeQuota | None:
-    try:        
+def reset_challenge_quota(db: Database, quota: ChallengeQuota) -> Dict | None:
+    try:
+        col = db.get_collection("challenge_quotas")
         quota_reset_date = datetime.now()
-        time_diff = quota_reset_date - quota.last_reset_date
+        last_reset = quota.last_reset_date
+        if not last_reset:
+            last_reset = quota_reset_date
+        
+        time_diff = quota_reset_date - last_reset
         should_reset = time_diff > timedelta(hours=2)
         if should_reset:
-            result = db.query(ChallengeQuota).filter(ChallengeQuota.user_id == quota.user_id).update(
-                {
-                    "quota_remaining": 50, 
-                    "last_reset_date": quota_reset_date
-                }
+            result = col.update_one(
+                {"_id": ObjectId(quota.id)},
+                {"$set": {"quota_remaining": DEFAULT_QUOTA, "last_reset_date": quota_reset_date}},
             )
-            db.commit()
-            if result > 0:
-                db.refresh(quota)
-        return quota
-    except Exception as e:
+            if result.modified_count > 0:
+                updated = col.find_one({"_id": ObjectId(quota.id)})
+                return _serialize_id(updated)
+        return _serialize_id(quota.__dict__) if hasattr(quota, '__dict__') else dict(quota)
+    except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 def create_challenge(
-    db: Session,
+    db: Database,
     difficulty: str,
     created_by: str,
     title: str,
     options: str,
     correct_answer_id: int,
     explanation: str
-) -> Challenge:
+) -> Dict | None:
     try:
-        challenge = Challenge(
-            difficulty=difficulty,
-            created_by=created_by,
-            title=title,
-            options=options,
-            correct_answer_id=correct_answer_id,
-            explanation=explanation
-        )
-        db.add(challenge)
-        db.commit()
-        db.refresh(challenge)
+        col = db.get_collection("challenges")
+        challenge = {
+            "difficulty": difficulty,
+            "date_created": datetime.now(),
+            "created_by": created_by,
+            "title": title,
+            "options": options,
+            "correct_answer_id": correct_answer_id,
+            "explanation": explanation
+        }
+        col.insert_one(challenge)
+        saved = col.find_one({"_id": ObjectId(challenge["id"])})
+        challenge = _serialize_id(saved)
         return challenge
-    except Exception as e:
+    except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def get_user_challenges(db: Session, user_id: int) -> list[Challenge]:
+def get_user_challenges(db: Database, user_id: int) -> list[Dict | None]:
     try:
-        challenges = db.query(Challenge).filter(Challenge.created_by == str(user_id)).order_by(
-            Challenge.date_created.desc()
-        ).all()
-        return challenges
-    except Exception as e:
+        col = db.get_collection("challenges")
+        challenges = col.find({"created_by": str(user_id)}).sort("date_created", -1)
+        return [_serialize_id(challenge) for challenge in challenges]
+    except PyMongoError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
