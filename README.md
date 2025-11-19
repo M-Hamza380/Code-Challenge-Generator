@@ -1,6 +1,6 @@
 # 💻 Coding Challenge Generator (FARM Stack)
 
-An AI-powered, full-stack web application that lets users generate, solve, and manage coding challenges. Built using the FARM stack — **FastAPI**, **React**, and **MongoDB** — with additional integration of LLMs for intelligent challenge generation. Features AI-powered challenge creation, authentication, and containerized deployment with Docker, Kubernetes, and Nginx on AWS.
+An AI-powered, full-stack web application that lets users generate, solve, and manage coding challenges. Built using the FARM stack — **FastAPI**, **React**, and **MongoDB** — with additional integration of LLMs for intelligent challenge generation. Features AI-powered challenge creation, authentication, and containerised deployment with Docker, Kubernetes, and Nginx on AWS.
 
 This project is designed to showcase a complete production-ready system, including:
 
@@ -14,7 +14,7 @@ This project is designed to showcase a complete production-ready system, includi
 
 #### Project Outcome:
 
-A fully functional, cloud-deployed AI system for interview question generation. Architected for extensibility, performance, and ease of integration with additional LLMs or frontend tools. Suitable for enterprise use or further customization.
+A fully functional, cloud-deployed AI system for interview question generation. Architected for extensibility, performance, and ease of integration with additional LLMs or frontend tools. Suitable for enterprise use or further customisation.
 
 # How to run?
 
